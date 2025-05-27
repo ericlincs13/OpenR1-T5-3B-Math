@@ -4,7 +4,7 @@ import wandb
 
 wandb.init(project="OpenR1-T5-3B-Math")
 
-MODEL_NAME = "google/t5-3b"
+MODEL_NAME = "google-t5/t5-3b"
 
 print("Loading dataset...")
 dataset = load_dataset("open-r1/OpenR1-Math-220k", "default", split="train")
