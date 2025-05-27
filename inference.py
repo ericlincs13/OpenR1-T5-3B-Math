@@ -1,9 +1,10 @@
 from datasets import load_dataset
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
+import re
 
-MODEL_NAME = "google/t5-3b"
-CHECKPOINT_DIR = "./t5-3b-finetuned-openr1"
+MODEL_NAME = "google-t5/t5-large"
+CHECKPOINT_DIR = "./t5-large-finetuned-openr1"
 
 print("Loading tokenizer and model...")
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
@@ -22,6 +23,15 @@ dataset = load_dataset("open-r1/OpenR1-Math-220k",
 
 correct = 0
 total = 0
+
+
+def extract_answer(text):
+    match = re.search(r"Answer:\s*(.*)", text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    else:
+        return text.strip()
+
 
 for example in dataset:
     input_text = example["problem"]  # type: ignore
@@ -42,13 +52,15 @@ for example in dataset:
                                  early_stopping=True)
     pred = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
+    pred_answer = extract_answer(pred)
+
     print("==============================")
     print("題目:", input_text)
-    print("預測答案:", pred)
+    print("預測答案:", pred_answer)
     print("正確答案:", answer_text)
 
-    # 統計正確率（完全比對）
-    if pred.strip() == answer_text.strip():
+    # 統計正確率（只比對答案）
+    if pred_answer == answer_text.strip():
         correct += 1
     total += 1
 
