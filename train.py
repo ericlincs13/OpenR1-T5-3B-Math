@@ -1,10 +1,15 @@
 from datasets import load_dataset
 from transformers import T5ForConditionalGeneration, T5Tokenizer, Trainer, TrainingArguments
 import wandb
+import argparse
 
-wandb.init(project="OpenR1-T5-3B-Math")
+parser = argparse.ArgumentParser()
+parser.add_argument("--cache", type=bool, default=True)
+args = parser.parse_args()
 
-MODEL_NAME = "google-t5/t5-3b"
+wandb.init(project="OpenR1-T5-Large-Math")
+
+MODEL_NAME = "google-t5/t5-large"
 
 print("Loading dataset...")
 dataset = load_dataset("open-r1/OpenR1-Math-220k", "default", split="train")
@@ -24,7 +29,10 @@ max_output_length = 2800
 
 def preprocess_function(examples):
     inputs = examples["problem"]
-    targets = examples["answer"]
+    targets = [
+        s + "\nAnswer: " + a
+        for s, a in zip(examples["solution"], examples["answer"])
+    ]
     model_inputs = tokenizer(inputs,
                              max_length=max_input_length,
                              truncation=True,
@@ -45,15 +53,17 @@ def preprocess_function(examples):
 print("Tokenizing train dataset...")
 train_dataset = train_dataset.map(preprocess_function,
                                   batched=True,
-                                  remove_columns=train_dataset.column_names)
+                                  remove_columns=train_dataset.column_names,
+                                  load_from_cache_file=args.cache)
 
 print("Tokenizing eval dataset...")
 eval_dataset = eval_dataset.map(preprocess_function,
                                 batched=True,
-                                remove_columns=eval_dataset.column_names)
+                                remove_columns=eval_dataset.column_names,
+                                load_from_cache_file=args.cache)
 
 training_args = TrainingArguments(
-    output_dir="./t5-3b-finetuned-openr1",
+    output_dir="./t5-large-finetuned-openr1",
     eval_strategy="steps",
     eval_steps=1000,
     logging_steps=100,
