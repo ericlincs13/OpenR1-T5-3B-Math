@@ -30,11 +30,10 @@ def preprocess_function(examples):
                              truncation=True,
                              padding="max_length")
 
-    with tokenizer.as_target_tokenizer():
-        labels = tokenizer(targets,
-                           max_length=max_output_length,
-                           truncation=True,
-                           padding="max_length")
+    labels = tokenizer(text_target=targets,
+                       max_length=max_output_length,
+                       truncation=True,
+                       padding="max_length")
 
     model_inputs["labels"] = labels["input_ids"]
     model_inputs["labels"] = [[(l if l != tokenizer.pad_token_id else -100)
@@ -55,7 +54,7 @@ eval_dataset = eval_dataset.map(preprocess_function,
 
 training_args = TrainingArguments(
     output_dir="./t5-3b-finetuned-openr1",
-    evaluation_strategy="steps",
+    eval_strategy="steps",
     eval_steps=1000,
     logging_steps=100,
     per_device_train_batch_size=1,
