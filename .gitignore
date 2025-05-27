@@ -1,0 +1,7 @@
+__pycache__/
+wandb/
+t5-3b-finetuned-openr1/
+*.log
+*.tmp
+*.ckpt
+*.pth
