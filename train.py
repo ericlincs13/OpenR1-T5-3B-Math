@@ -64,6 +64,7 @@ eval_dataset = eval_dataset.map(preprocess_function,
 
 training_args = TrainingArguments(
     output_dir="./output",
+    run_name="t5-large-finetune",
     eval_strategy="steps",
     eval_steps=1000,
     logging_steps=100,
@@ -75,7 +76,7 @@ training_args = TrainingArguments(
     num_train_epochs=3,
     save_steps=1000,
     save_total_limit=2,
-    fp16=False,
+    fp16=True,
     report_to="wandb",
 )
 
