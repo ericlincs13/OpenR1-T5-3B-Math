@@ -1,6 +1,6 @@
 __pycache__/
 wandb/
-t5-3b-finetuned-openr1/
+t5-large-finetuned-openr1/
 *.log
 *.tmp
 *.ckpt

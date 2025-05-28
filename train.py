@@ -70,12 +70,12 @@ training_args = TrainingArguments(
     per_device_train_batch_size=1,
     per_device_eval_batch_size=1,
     gradient_accumulation_steps=16,
-    learning_rate=5e-5,
+    learning_rate=1e-5,
     weight_decay=0.01,
     num_train_epochs=3,
     save_steps=1000,
     save_total_limit=2,
-    fp16=True,
+    fp16=False,
     report_to="wandb",
 )
 
