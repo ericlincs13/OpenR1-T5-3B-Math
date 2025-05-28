@@ -23,7 +23,7 @@ print("Loading tokenizer and model...")
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
 model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME)
 
-max_input_length = 1024
+max_input_length = 192
 max_output_length = 1024
 
 
@@ -68,7 +68,6 @@ training_args = TrainingArguments(
     eval_strategy="steps",
     eval_steps=1000,
     logging_steps=10,
-    max_grad_norm=1.0,
     per_device_train_batch_size=1,
     per_device_eval_batch_size=1,
     gradient_accumulation_steps=16,
