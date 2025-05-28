@@ -24,7 +24,7 @@ tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
 model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME)
 
 max_input_length = 1024
-max_output_length = 2800
+max_output_length = 1024
 
 
 def preprocess_function(examples):
