@@ -68,7 +68,6 @@ training_args = TrainingArguments(
     eval_strategy="steps",
     eval_steps=1000,
     logging_steps=10,
-    max_steps=100,
     max_grad_norm=1.0,
     per_device_train_batch_size=1,
     per_device_eval_batch_size=1,
@@ -78,7 +77,7 @@ training_args = TrainingArguments(
     num_train_epochs=3,
     save_steps=1000,
     save_total_limit=2,
-    fp16=True,
+    fp16=False,
     report_to="wandb",
 )
 
