@@ -63,7 +63,7 @@ eval_dataset = eval_dataset.map(preprocess_function,
                                 load_from_cache_file=args.cache)
 
 training_args = TrainingArguments(
-    output_dir="./t5-large-finetuned-openr1",
+    output_dir="./output",
     eval_strategy="steps",
     eval_steps=1000,
     logging_steps=100,
