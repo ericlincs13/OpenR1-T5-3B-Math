@@ -23,7 +23,7 @@ max_output_length = 2800
 print("Loading dataset...")
 dataset = load_dataset("open-r1/OpenR1-Math-220k",
                        "default",
-                       split="test[:100]")
+                       split="train[:100]")
 
 correct = 0
 total = 0
