@@ -4,7 +4,7 @@ import torch
 import re
 
 MODEL_NAME = "google-t5/t5-large"
-CHECKPOINT_DIR = "./t5-large-finetuned-openr1"
+CHECKPOINT_DIR = "output"
 
 print("Loading tokenizer and model...")
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
