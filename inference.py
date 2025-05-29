@@ -2,14 +2,18 @@ from datasets import load_dataset
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
 import re
+import argparse
 
 MODEL_NAME = "google-t5/t5-large"
-CHECKPOINT_DIR = "output"
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--checkpoint", type=str, required=True)
+args = parser.parse_args()
 
 print("Loading tokenizer and model...")
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = T5ForConditionalGeneration.from_pretrained(CHECKPOINT_DIR,
+model = T5ForConditionalGeneration.from_pretrained(args.checkpoint,
                                                    device_map=device)
 model.eval()
 
