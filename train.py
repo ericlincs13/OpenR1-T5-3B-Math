@@ -5,8 +5,8 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--cache", type=bool, default=True)
-parser.add_argument("--resume-from", type=str, default=None)
 parser.add_argument("--epochs", type=int, default=3)
+parser.add_argument("--output-dir", type=str, default="output")
 args = parser.parse_args()
 
 wandb.init(project="OpenR1-T5-Large-Math")
@@ -65,14 +65,13 @@ eval_dataset = eval_dataset.map(preprocess_function,
                                 load_from_cache_file=args.cache)
 
 training_args = TrainingArguments(
-    output_dir="./output",
+    output_dir=args.output_dir,
     run_name="t5-large-finetune",
     eval_strategy="steps",
     eval_steps=1000,
     logging_steps=10,
-    per_device_train_batch_size=1,
-    per_device_eval_batch_size=1,
-    gradient_accumulation_steps=16,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=16,
     learning_rate=1e-5,
     weight_decay=0.01,
     num_train_epochs=args.epochs,
@@ -90,6 +89,6 @@ trainer = Trainer(
 )
 
 print("Start training...")
-trainer.train(resume_from_checkpoint=args.resume_from)
+trainer.train(resume_from_checkpoint=True)
 
 print("Training finished.")
