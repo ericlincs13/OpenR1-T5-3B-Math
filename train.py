@@ -88,6 +88,6 @@ trainer = Trainer(
 )
 
 print("Start training...")
-trainer.train()
+trainer.train(resume_from_checkpoint=True)
 
 print("Training finished.")
