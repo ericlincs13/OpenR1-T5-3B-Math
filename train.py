@@ -2,6 +2,8 @@ from datasets import load_dataset
 from transformers import T5ForConditionalGeneration, T5Tokenizer, Trainer, TrainingArguments
 import wandb
 import argparse
+import os
+import re
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--cache", type=bool, default=True)
@@ -91,6 +93,17 @@ trainer = Trainer(
 )
 
 print("Start training...")
-trainer.train(resume_from_checkpoint=args.resume)
+
+if args.resume:
+    checkpoint_files = [
+        f for f in os.listdir(args.output_dir)
+        if re.match(r"^checkpoint-\d+$", f)
+    ]
+    max_epoch_ckpt = max(checkpoint_files, key=lambda x: int(x.split('-')[1]))
+    checkpoint_path = os.path.join(args.output_dir, max_epoch_ckpt)
+    print(f"Resuming from checkpoint: {checkpoint_path}")
+    trainer.train(resume_from_checkpoint=checkpoint_path)
+else:
+    trainer.train()
 
 print("Training finished.")
