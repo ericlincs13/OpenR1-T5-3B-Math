@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--cache", type=bool, default=True)
 parser.add_argument("--epochs", type=int, default=3)
 parser.add_argument("--output-dir", type=str, default="output")
+parser.add_argument("--resume", action="store_true")
 args = parser.parse_args()
 
 wandb.init(project="OpenR1-T5-Large-Math")
@@ -89,6 +90,6 @@ trainer = Trainer(
 )
 
 print("Start training...")
-trainer.train(resume_from_checkpoint=True)
+trainer.train(resume_from_checkpoint=args.resume)
 
 print("Training finished.")
