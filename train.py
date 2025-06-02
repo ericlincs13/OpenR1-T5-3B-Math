@@ -32,7 +32,10 @@ max_output_length = 512
 
 def preprocess_function(examples):
     inputs = examples["input"]
-    targets = examples["process"] + "\nAnswer: " + examples["label"]
+    targets = [
+        process + "\nAnswer: " + label
+        for process, label in zip(examples["process"], examples["label"])
+    ]
     model_inputs = tokenizer(inputs,
                              max_length=max_input_length,
                              truncation=True,
@@ -90,7 +93,7 @@ training_args = TrainingArguments(
     run_name="t5-large-hendrycks-math",
     eval_strategy="steps",
     eval_steps=1000,
-    logging_steps=10,
+    logging_steps=100,
     per_device_train_batch_size=16,
     per_device_eval_batch_size=16,
     # gradient_accumulation_steps=16,
