@@ -2,7 +2,7 @@ from transformers import T5Tokenizer
 import numpy as np
 from svamp_dataloader import SVAMPDatasetLoader
 
-MODEL_NAME = "google-t5/t5-large"
+MODEL_NAME = "google/t5-v1_1-large"
 
 svamp_loader = SVAMPDatasetLoader()
 datasets = svamp_loader.load_from_source()
