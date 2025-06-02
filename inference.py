@@ -1,10 +1,9 @@
-from datasets import load_dataset
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
-import re
 import argparse
+from hendrycks_dataloader import HendrycksDatasetLoader
 
-MODEL_NAME = "google-t5/t5-large"
+MODEL_NAME = "google/t5-v1_1-large"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--checkpoint", type=str, required=True)
@@ -17,29 +16,31 @@ model = T5ForConditionalGeneration.from_pretrained(args.checkpoint,
                                                    device_map=device)
 model.eval()
 
-max_input_length = 1024
-max_output_length = 2800
+max_input_length = 192
+max_output_length = 512
 
 print("Loading dataset...")
-dataset = load_dataset("open-r1/OpenR1-Math-220k",
-                       "default",
-                       split="train[:100]")
+dataloader = HendrycksDatasetLoader()
+datasets = dataloader.load_from_source()
+dataset = datasets["test"]
 
 correct = 0
 total = 0
 
 
-def extract_answer(text):
-    matches = re.findall(r"Answer:\s*(.*)", text, re.DOTALL)
-    if matches:
-        return matches[-1].strip()
-    else:
-        return text.strip()
+def extract_answer(s):
+    s = s.lower()
+    if "answer:" in s:
+        return s.split("answer:")[-1].strip()
+    try:
+        return float(s.strip())
+    except:
+        return s.strip()
 
 
 for example in dataset:
-    input_text = example["problem"]  # type: ignore
-    answer_text = example["answer"]  # type: ignore
+    input_text = example["input"]  # type: ignore
+    answer_text = example["label"]  # type: ignore
     inputs = tokenizer(input_text,
                        max_length=max_input_length,
                        truncation=True,
@@ -57,14 +58,14 @@ for example in dataset:
     pred = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     pred_answer = extract_answer(pred)
+    truth_answer = extract_answer(answer_text)
 
     print("==============================")
     print("題目:", input_text)
     print("預測答案:", pred_answer)
-    print("正確答案:", answer_text)
+    print("正確答案:", truth_answer)
 
-    # 統計正確率（只比對答案）
-    if pred_answer == answer_text.strip():
+    if pred_answer == truth_answer:
         correct += 1
     total += 1
 

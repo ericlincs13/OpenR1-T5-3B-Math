@@ -1,4 +1,4 @@
-from svamp_dataloader import SVAMPDatasetLoader
+from hendrycks_dataloader import HendrycksDatasetLoader
 from transformers import T5ForConditionalGeneration, T5Tokenizer, Trainer, TrainingArguments
 import wandb
 import argparse
@@ -12,13 +12,13 @@ parser.add_argument("--output-dir", type=str, default="output")
 parser.add_argument("--resume", action="store_true")
 args = parser.parse_args()
 
-wandb.init(project="SVAMP-T5-V1_1-Large-Math")
+wandb.init(project="Hendrycks-Math-T5-V1_1-Large")
 
 MODEL_NAME = "google/t5-v1_1-large"
 
 print("Loading dataset...")
-svamp_loader = SVAMPDatasetLoader()
-datasets = svamp_loader.load_from_source()
+dataloader = HendrycksDatasetLoader()
+datasets = dataloader.load_from_source()
 train_dataset = datasets["train"]
 eval_dataset = datasets["test"]
 
@@ -26,13 +26,13 @@ print("Loading tokenizer and model...")
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
 model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME)
 
-max_input_length = 64
-max_output_length = 16
+max_input_length = 192
+max_output_length = 512
 
 
 def preprocess_function(examples):
     inputs = examples["input"]
-    targets = examples["label"]
+    targets = examples["process"] + "\nAnswer: " + examples["label"]
     model_inputs = tokenizer(inputs,
                              max_length=max_input_length,
                              truncation=True,
@@ -68,31 +68,35 @@ def compute_metrics(eval_pred):
     pred_str = tokenizer.batch_decode(predictions, skip_special_tokens=True)
     label_str = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
-    # 嘗試將答案轉成 float 比對
-    def to_float(s):
+    def extract_label(s):
+        s = s.lower()
+        if "answer:" in s:
+            return s.split("answer:")[-1].strip()
         try:
             return float(s.strip())
         except:
             return s.strip()
 
-    correct = [to_float(p) == to_float(l) for p, l in zip(pred_str, label_str)]
+    pred_label = [extract_label(p) for p in pred_str]
+    true_label = [extract_label(l) for l in label_str]
+
+    correct = [p == l for p, l in zip(pred_label, true_label)]
     acc = sum(correct) / len(correct)
     return {"accuracy": acc}
 
 
 training_args = TrainingArguments(
     output_dir=args.output_dir,
-    run_name="t5-large-svamp",
+    run_name="t5-large-hendrycks-math",
     eval_strategy="steps",
     eval_steps=1000,
     logging_steps=10,
-    per_device_train_batch_size=64,
-    per_device_eval_batch_size=64,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=16,
     # gradient_accumulation_steps=16,
     learning_rate=1e-5,
     weight_decay=0.01,
-    # num_train_epochs=args.epochs,
-    max_steps=1000,
+    num_train_epochs=args.epochs,
     save_steps=100,
     save_total_limit=2,
     fp16=False,
