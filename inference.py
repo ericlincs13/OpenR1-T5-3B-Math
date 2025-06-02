@@ -7,6 +7,7 @@ MODEL_NAME = "google/t5-v1_1-large"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--checkpoint", type=str, required=True)
+parser.add_argument("--total", type=int, default=100)
 args = parser.parse_args()
 
 print("Loading tokenizer and model...")
@@ -68,5 +69,8 @@ for example in dataset:
     if pred_answer == truth_answer:
         correct += 1
     total += 1
+
+    if total >= args.total:
+        break
 
 print(f"\n總共 {total} 題，正確 {correct} 題，正確率：{correct/total:.2%}")
