@@ -1,10 +1,10 @@
 from transformers import T5Tokenizer
 import numpy as np
-from svamp_dataloader import SVAMPDatasetLoader
+from hendrycks_dataloader import HendrycksDatasetLoader
 
 MODEL_NAME = "google/t5-v1_1-large"
 
-svamp_loader = SVAMPDatasetLoader()
+svamp_loader = HendrycksDatasetLoader()
 datasets = svamp_loader.load_from_source()
 train_dataset = datasets["train"]
 eval_dataset = datasets["test"]
@@ -16,7 +16,7 @@ output_lens = []
 
 for example in train_dataset:
     input_ids = tokenizer.encode(example["input"], truncation=False)
-    output_text = example["label"]
+    output_text = example["process"] + "\nAnswer: " + example["label"]
     output_ids = tokenizer.encode(output_text, truncation=False)
     input_lens.append(len(input_ids))
     output_lens.append(len(output_ids))
