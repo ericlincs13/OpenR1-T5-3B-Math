@@ -30,9 +30,9 @@ total = 0
 
 
 def extract_answer(text):
-    match = re.search(r"Answer:\s*(.*)", text, re.DOTALL)
-    if match:
-        return match.group(1).strip()
+    matches = re.findall(r"Answer:\s*(.*)", text, re.DOTALL)
+    if matches:
+        return matches[-1].strip()
     else:
         return text.strip()
 
