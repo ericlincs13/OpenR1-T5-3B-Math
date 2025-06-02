@@ -1,4 +1,4 @@
-from datasets import load_dataset
+from svamp_dataloader import SVAMPDatasetLoader
 from transformers import T5ForConditionalGeneration, T5Tokenizer, Trainer, TrainingArguments
 import wandb
 import argparse
@@ -12,32 +12,27 @@ parser.add_argument("--output-dir", type=str, default="output")
 parser.add_argument("--resume", action="store_true")
 args = parser.parse_args()
 
-wandb.init(project="OpenR1-T5-Large-Math")
+wandb.init(project="SVAMP-T5-V1_1-Large-Math")
 
-MODEL_NAME = "google-t5/t5-large"
+MODEL_NAME = "google/t5-v1_1-large"
 
 print("Loading dataset...")
-dataset = load_dataset("open-r1/OpenR1-Math-220k", "default", split="train")
-
-print("Creating train and eval splits...")
-split = dataset.train_test_split(test_size=0.05, seed=42)  # type: ignore
-train_dataset = split["train"]
-eval_dataset = split["test"]
+svamp_loader = SVAMPDatasetLoader()
+datasets = svamp_loader.load_from_source()
+train_dataset = datasets["train"]
+eval_dataset = datasets["test"]
 
 print("Loading tokenizer and model...")
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
 model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME)
 
-max_input_length = 192
-max_output_length = 1024
+max_input_length = 64
+max_output_length = 16
 
 
 def preprocess_function(examples):
-    inputs = examples["problem"]
-    targets = [
-        s + "\nAnswer: " + a
-        for s, a in zip(examples["solution"], examples["answer"])
-    ]
+    inputs = examples["input"]
+    targets = examples["label"]
     model_inputs = tokenizer(inputs,
                              max_length=max_input_length,
                              truncation=True,
@@ -67,19 +62,38 @@ eval_dataset = eval_dataset.map(preprocess_function,
                                 remove_columns=eval_dataset.column_names,
                                 load_from_cache_file=args.cache)
 
+
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred
+    pred_str = tokenizer.batch_decode(predictions, skip_special_tokens=True)
+    label_str = tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+    # 嘗試將答案轉成 float 比對
+    def to_float(s):
+        try:
+            return float(s.strip())
+        except:
+            return s.strip()
+
+    correct = [to_float(p) == to_float(l) for p, l in zip(pred_str, label_str)]
+    acc = sum(correct) / len(correct)
+    return {"accuracy": acc}
+
+
 training_args = TrainingArguments(
     output_dir=args.output_dir,
-    run_name="t5-large-finetune",
+    run_name="t5-large-svamp",
     eval_strategy="steps",
     eval_steps=1000,
     logging_steps=10,
-    per_device_train_batch_size=1,
-    per_device_eval_batch_size=1,
-    gradient_accumulation_steps=16,
+    per_device_train_batch_size=64,
+    per_device_eval_batch_size=64,
+    # gradient_accumulation_steps=16,
     learning_rate=1e-5,
     weight_decay=0.01,
-    num_train_epochs=args.epochs,
-    save_steps=1000,
+    # num_train_epochs=args.epochs,
+    max_steps=1000,
+    save_steps=100,
     save_total_limit=2,
     fp16=False,
     report_to="wandb",
@@ -90,6 +104,7 @@ trainer = Trainer(
     args=training_args,
     train_dataset=train_dataset,
     eval_dataset=eval_dataset,
+    compute_metrics=compute_metrics,
 )
 
 print("Start training...")
