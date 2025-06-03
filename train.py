@@ -65,32 +65,11 @@ eval_dataset = eval_dataset.map(preprocess_function,
                                 remove_columns=eval_dataset.column_names,
                                 load_from_cache_file=args.cache)
 
-# def compute_metrics(eval_pred):
-#     predictions, labels = eval_pred
-#     pred_str = tokenizer.batch_decode(predictions, skip_special_tokens=True)
-#     label_str = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-#     def extract_label(s):
-#         s = s.lower()
-#         if "answer:" in s:
-#             return s.split("answer:")[-1].strip()
-#         try:
-#             return float(s.strip())
-#         except:
-#             return s.strip()
-
-#     pred_label = [extract_label(p) for p in pred_str]
-#     true_label = [extract_label(l) for l in label_str]
-
-#     correct = [p == l for p, l in zip(pred_label, true_label)]
-#     acc = sum(correct) / len(correct)
-#     return {"accuracy": acc}
-
 training_args = TrainingArguments(
     output_dir=args.output_dir,
     run_name="t5-large-hendrycks-math",
     eval_strategy="steps",
-    eval_steps=1,
+    eval_steps=1000,
     logging_steps=100,
     per_device_train_batch_size=1,
     per_device_eval_batch_size=1,
@@ -109,7 +88,6 @@ trainer = Trainer(
     args=training_args,
     train_dataset=train_dataset,
     eval_dataset=eval_dataset,
-    # compute_metrics=compute_metrics,
 )
 
 print("Start training...")
