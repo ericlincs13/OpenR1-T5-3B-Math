@@ -63,6 +63,7 @@ for example in dataset:
 
     print("==============================")
     print("題目:", input_text)
+    print("完整預測內容:", pred)
     print("預測答案:", pred_answer)
     print("正確答案:", truth_answer)
 
