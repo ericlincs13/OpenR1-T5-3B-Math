@@ -20,7 +20,7 @@ print("Loading dataset...")
 dataloader = HendrycksDatasetLoader()
 datasets = dataloader.load_from_source()
 train_dataset = datasets["train"]
-eval_dataset = datasets["test"].select(range(1000))
+eval_dataset = datasets["test"].select(range(800))
 
 print("Loading tokenizer and model...")
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
