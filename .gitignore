@@ -1,6 +1,7 @@
 __pycache__/
 wandb/
 output/
+t5-large-hendrycks/
 *.log
 *.tmp
 *.ckpt
